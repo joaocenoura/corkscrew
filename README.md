@@ -28,3 +28,11 @@ Example
 qemu-system-x86_64 -cdrom tmp/test.iso
 ```
 
+References
+----------
+
+- https://wiki.debian.org/DebianInstaller/Modify/CD
+- https://wiki.debian.org/DebianInstaller/Preseed
+- https://www.debian.org/releases/jessie/i386/apbs05.html.en
+- http://askubuntu.com/questions/344702/is-it-possible-to-ask-arbitrary-questions-in-the-preseed-during-ubuntu-install
+- http://www.fifi.org/doc/debconf-doc/tutorial.html

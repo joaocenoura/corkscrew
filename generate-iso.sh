@@ -36,11 +36,30 @@ if [ -z "$installer_url" ] && [ ! -f "$LATEST_INSTALLER" ]; then
 fi
 
 ## clean workspace
-sudo rm -rf $CD_DIR
+if [ -d "$CD_DIR" ]; then
+    chmod +w -R $CD_DIR
+    rm -rf $CD_DIR
+fi
 mkdir $CD_DIR
 
 ## explode installer
 bsdtar -C $CD_DIR -xf $LATEST_INSTALLER
+
+################################################################################
+# add preseed.cfg
+cp $BASE/preseed.cfg $CD_DIR/preseed.cfg
+chmod +w $CD_DIR/isolinux
+sed -i 's#append#append file=/cdrom/preseed.cfg#g' $CD_DIR/isolinux/gtk.cfg
+sed -i 's#append#append file=/cdrom/preseed.cfg#g' $CD_DIR/isolinux/txt.cfg
+chmod -w $CD_DIR/isolinux
+
+chmod +w $CD_DIR/install.amd                     # allow us to write temporarily
+gunzip $CD_DIR/install.amd/initrd.gz             # unpack initrd
+chmod +w $CD_DIR/install.amd/initrd              # allow us to write temporarily
+echo "preseed.cfg" | cpio -o -H newc -A -F $CD_DIR/install.amd/initrd
+chmod -w $CD_DIR/install.amd/initrd              # revert to write protected
+gzip $CD_DIR/install.amd/initrd                  # pack initrd with our preseed
+chmod -w $CD_DIR/install.amd                     # revert to write protected
 
 ################################################################################
 # finalize
