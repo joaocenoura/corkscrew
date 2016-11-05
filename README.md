@@ -14,15 +14,28 @@ Usage
 -----
 
 ```
-./generate-iso.sh [base_installer_url]
+./generate-iso.sh [configuration file]
 ```
+
+Configuration
+-------------
+
+Configuration is done via `conf` files. Ensure the following variables are defined:
+
+```
+INSTALLER_NAME - Name of the installer. Is also the output ISO name
+INSTALLER_URL  - URL for the given installer (stable, testing, unstable etc)
+PRESEED_FILE   - Location of preseed file. If it isn't an absolute directory, it is relative to conf file
+```
+
+Checkout the sample configurations under `./conf`
 
 Example
 -------
 
 ```
 # Download debian testing and generate iso
-./generate-iso.sh http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
+./generate-iso.sh conf/sample.conf
 
 # Test it quickly with qemu (choose text based install; graphic install not working)
 qemu-system-x86_64 -cdrom tmp/test.iso
