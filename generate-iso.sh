@@ -64,18 +64,17 @@ function validate_configuration {
 
 function download_installer {
     header "download installer"
-    local url=$1
-    local installer_name="$(basename $url)"
+    local installer_name="$(basename $INSTALLER_URL)"
     local installer_path="$TMP_INSTALLERS/$installer_name"
 
     if [ ! -f "$installer_path" ]; then
         log_info "download_installer" "$installer_name doesn't exist... downloading"
         log_info "download_installer" "downloading installer if necessary"
-        log_info "download_installer" "from: $url"
+        log_info "download_installer" "from: $INSTALLER_URL"
         log_info "download_installer" "  to: $(relative_basepath_for $installer_path)"
 
         tmp_file=$(mktemp)
-        wget -q --show-progress $url -O $tmp_file
+        wget -q --show-progress "$INSTALLER_URL" -O $tmp_file
         mv $tmp_file $installer_path
     else
         log_info "download_installer" "reusing installer"
@@ -108,19 +107,24 @@ function unpack_installer {
 function preseed_installer {
     header "preseed installer"
 
-    cp $PRESEED_FILE $CD_DIR/preseed.cfg
-    chmod +w $CD_DIR/isolinux
-    sed -i 's#append#append file=/cdrom/preseed.cfg#g' $CD_DIR/isolinux/gtk.cfg
-    sed -i 's#append#append file=/cdrom/preseed.cfg#g' $CD_DIR/isolinux/txt.cfg
-    chmod -w $CD_DIR/isolinux
+    cp $PRESEED_FILE $TMP/preseed.cfg
 
     chmod +w $CD_DIR/install.amd                 # allow us to write temporarily
     gunzip $CD_DIR/install.amd/initrd.gz         # unpack initrd
     chmod +w $CD_DIR/install.amd/initrd          # allow us to write temporarily
-    echo "$PRESEED_FILE" | cpio -o -H newc -A -F $CD_DIR/install.amd/initrd
+    cd $TMP && echo "preseed.cfg" | cpio -o -H newc -A -F $CD_DIR/install.amd/initrd
     chmod -w $CD_DIR/install.amd/initrd          # revert to write protected
     gzip $CD_DIR/install.amd/initrd              # pack initrd with our preseed
     chmod -w $CD_DIR/install.amd                 # revert to write protected
+}
+
+function customize_installer {
+    header "customize installer"
+
+    # small customization line to give quick feedback about the current build
+    chmod +w $CD_DIR/isolinux
+    sed -i "s#Install#Install `date +%Y-%m-%d:%H:%M:%S`#g" $CD_DIR/isolinux/txt.cfg
+    chmod -w $CD_DIR/isolinux
 }
 
 function rewrite_md5sum {
@@ -153,12 +157,13 @@ load_configuration "$1"
 validate_configuration
 
 # prepare
-download_installer "$INSTALLER_URL"
+download_installer
 clean_workspace
 unpack_installer
 
 # tasks
 preseed_installer
+customize_installer
 
 # finalize
 rewrite_md5sum
