@@ -3,7 +3,7 @@ BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TMP="$BASE/tmp"
 TMP_INSTALLERS="$TMP/installers"
 LATEST_INSTALLER="$TMP_INSTALLERS/latest"
-WORKSPACE="$BASE/workspace"
+WORKSPACE="${WORKSPACE:-$BASE/workspace}"
 CD_DIR="$WORKSPACE/cd"
 mkdir -p $TMP_INSTALLERS $WORKSPACE
 
